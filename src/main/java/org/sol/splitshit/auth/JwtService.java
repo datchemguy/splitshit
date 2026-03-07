@@ -1,7 +1,6 @@
 package org.sol.splitshit.auth;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.AeadAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,15 +34,15 @@ public class JwtService {
                 .subject(username)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + expiration))
-                .encryptWith(key(), Jwts.ENC.A128CBC_HS256)
+                .signWith(key())
                 .compact();
     }
 
     public String extractSubject(@NonNull String token) {
         return Jwts.parser()
-                .decryptWith(key())
+                .verifyWith(key())
                 .build()
-                .parseEncryptedClaims(token)
+                .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
     }

@@ -16,6 +16,18 @@ public class Group {
     private String name;
     @OneToMany private Set<SUser> members = new HashSet<>();
 
+    protected Group() {
+
+    }
+
+    public void addMember(SUser user) {
+        members.add(user);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private final Group group;
 
@@ -33,8 +45,8 @@ public class Group {
             return this;
         }
 
-        public Builder members(@NonNull Set<SUser> members) {
-            group.members = members;
+        public Builder member(@NonNull SUser member) {
+            group.members.add(member);
             return this;
         }
 

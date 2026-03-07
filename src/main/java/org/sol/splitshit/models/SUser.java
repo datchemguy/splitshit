@@ -1,5 +1,6 @@
 package org.sol.splitshit.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -8,15 +9,18 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 public class SUser implements UserDetails {
     @Id private String username;
     private String password;
-    @ManyToOne private Group group;
-    @ElementCollection private List<Payment> payments;
+    @ManyToOne @JsonIgnore
+    private Group group;
+    @ElementCollection private List<Payment> payments = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -31,6 +35,31 @@ public class SUser implements UserDetails {
     @Override
     public String getUsername() {
         return username;
+    }
+
+    public @Nullable Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(@Nullable Group group) {
+        this.group = group;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this == obj) return true;
+        if(obj == null || getClass() != obj.getClass()) return false;
+        SUser that = (SUser) obj;
+        return Objects.equals(username, that.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public static class Builder {
