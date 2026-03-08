@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
 import org.sol.splitshit.repos.UserRepo;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,14 +17,11 @@ import java.io.IOException;
 class JwtAuthFilter extends OncePerRequestFilter {
     private final UserRepo userRepo;
     private final JwtService jwtService;
-    private final SecurityContext securityContext;
 
     public JwtAuthFilter(UserRepo userRepo,
-                         JwtService jwtService,
-                         SecurityContext securityContext) {
+                         JwtService jwtService) {
         this.userRepo = userRepo;
         this.jwtService = jwtService;
-        this.securityContext = securityContext;
     }
 
     @Override
@@ -36,7 +33,7 @@ class JwtAuthFilter extends OncePerRequestFilter {
         if(auth != null && auth.startsWith("Bearer ")) {
             String username = jwtService.extractSubject(auth.substring(7));
             userRepo.findById(username).ifPresentOrElse(
-                    user -> securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(
+                    user -> SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                             user.getUsername(), user.getPassword(), user.getAuthorities())),
                     () -> {}
             );

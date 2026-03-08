@@ -1,10 +1,9 @@
 package org.sol.splitshit.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import jakarta.persistence.*;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,16 +14,29 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
+@Table(name = "s_user")
+@JsonIncludeProperties({"username", "payments"})
 public class SUser implements UserDetails {
     @Id private String username;
-    private String password;
-    @ManyToOne @JsonIgnore
+    @JsonIgnore private String password;
+    @ManyToOne @JoinColumn(name = "group_id") @JsonIgnore
     private Group group;
-    @ElementCollection private List<Payment> payments = new ArrayList<>();
+    @ElementCollection private List<Payment> payments;
+
+    protected SUser() {
+        this(null, null, null, new ArrayList<>());
+    }
+
+    SUser(String username, String password, Group group, List<Payment> payments) {
+        this.username = username;
+        this.password = password;
+        this.group = group;
+        this.payments = payments;
+    }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+    public @Nullable String getUsername() {
+        return username;
     }
 
     @Override
@@ -33,8 +45,8 @@ public class SUser implements UserDetails {
     }
 
     @Override
-    public String getUsername() {
-        return username;
+    public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
     }
 
     public @Nullable Group getGroup() {
@@ -45,10 +57,14 @@ public class SUser implements UserDetails {
         this.group = group;
     }
 
+    public @NonNull List<Payment> getPayments() {
+        return payments;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if(this == obj) return true;
-        if(obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
         SUser that = (SUser) obj;
         return Objects.equals(username, that.username);
     }

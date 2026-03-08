@@ -7,11 +7,12 @@ import org.sol.splitshit.repos.GroupRepo;
 import org.sol.splitshit.repos.UserRepo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users/{userId}/groups")
-@PreAuthorize("#userId == authentication.name")
+@RequestMapping("/groups")
+@PreAuthorize("isAuthenticated()")
 class GroupController {
     private UserRepo userRepo;
     private GroupRepo groupRepo;
@@ -23,9 +24,9 @@ class GroupController {
     }
 
     @PostMapping
-    public ResponseEntity<@NonNull Group> createGroup(@PathVariable String userId,
+    public ResponseEntity<@NonNull Group> createGroup(@AuthenticationPrincipal String username,
                                                       @RequestParam String name) {
-        var optUser = userRepo.findById(userId);
+        var optUser = userRepo.findById(username);
         if(optUser.isEmpty()) return ResponseEntity.notFound().build();
         SUser user = optUser.get();
         Group group = Group.builder().name(name).member(user).build();
@@ -36,9 +37,9 @@ class GroupController {
     }
 
     @PostMapping("/{groupId}")
-    public ResponseEntity<?> joinGroup(@PathVariable String userId,
+    public ResponseEntity<?> joinGroup(@AuthenticationPrincipal String username,
                                        @PathVariable Long groupId) {
-        var optUser = userRepo.findById(userId);
+        var optUser = userRepo.findById(username);
         if(optUser.isEmpty()) return ResponseEntity.notFound().build();
         SUser user = optUser.get();
         if(user.getGroup() != null) return ResponseEntity.badRequest().body("You are already in a group");
@@ -53,8 +54,8 @@ class GroupController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> leaveGroup(@PathVariable String userId) {
-        var optUser = userRepo.findById(userId);
+    public ResponseEntity<?> leaveGroup(@AuthenticationPrincipal String username) {
+        var optUser = userRepo.findById(username);
         if(optUser.isEmpty()) return ResponseEntity.notFound().build();
         SUser user = optUser.get();
         if(user.getGroup() == null) return ResponseEntity.badRequest().body("Not in a group");
