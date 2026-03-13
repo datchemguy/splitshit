@@ -3,6 +3,7 @@ package org.sol.splitshit.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
+import org.hibernate.annotations.EmbeddedTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,7 +22,8 @@ public class SUser implements UserDetails {
     @JsonIgnore private String password;
     @ManyToOne @JoinColumn(name = "group_id") @JsonIgnore
     private Group group;
-    @ElementCollection private List<Payment> payments;
+    @ElementCollection @JoinTable(joinColumns = @JoinColumn(name = "username")) @EmbeddedTable("payments")
+    private List<Payment> payments;
 
     protected SUser() {
         this(null, null, null, new ArrayList<>());
